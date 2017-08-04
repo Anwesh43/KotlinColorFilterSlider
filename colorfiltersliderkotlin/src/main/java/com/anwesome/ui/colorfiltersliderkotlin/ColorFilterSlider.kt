@@ -60,9 +60,10 @@ class ColorFilterSlider(var ctx:Context,var bitmap:Bitmap,var colors:Array<Int>)
             time++
         }
         fun handleSwipe(dir:Int) {
-            if((dir == -1 && counter < v.colors.size-2) || (dir == 1 && counter > 0)) {
-                animationHandler?.start(dir)
-                counter -= dir
+            if((dir == -1 && counter < v.colors.size-1) || (dir == 1 && counter > 0)) {
+                if(animationHandler?.start(dir)?:false) {
+                    counter -= dir
+                }
             }
         }
     }
@@ -80,7 +81,7 @@ class ColorFilterSlider(var ctx:Context,var bitmap:Bitmap,var colors:Array<Int>)
             canvas.translate(screen?.x?:0.0f,0.0f)
             var x = 0.0f
             colors.forEach { color ->
-                paint.color = Color.argb(150,Color.red(color),Color.green(color),Color.blue(color))
+                paint.color = Color.argb(120,Color.red(color),Color.green(color),Color.blue(color))
                 canvas.drawRect(RectF(x,0.0f,x+w.toFloat(),h.toFloat()),paint)
                 x += w
             }
@@ -112,7 +113,7 @@ class ColorFilterSlider(var ctx:Context,var bitmap:Bitmap,var colors:Array<Int>)
                 animated = false
             }
         }
-        fun start(dir:Int) {
+        fun start(dir:Int):Boolean {
             if(!animated) {
                 when (dir) {
                     1 -> {
@@ -123,7 +124,9 @@ class ColorFilterSlider(var ctx:Context,var bitmap:Bitmap,var colors:Array<Int>)
                     }
                 }
                 animated = true
+                return true
             }
+            return false
         }
     }
     companion object {
