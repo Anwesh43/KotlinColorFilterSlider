@@ -1,5 +1,8 @@
 package com.anwesome.ui.colorfiltersliderkotlin
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -11,7 +14,7 @@ import android.view.View
 /**
  * Created by anweshmishra on 04/08/17.
  */
-class ColorFilterSlider(ctx:Context,bitmap:Bitmap,colors:Array<Int>):View(ctx) {
+class ColorFilterSlider(ctx:Context,var bitmap:Bitmap,var colors:Array<Int>):View(ctx) {
     val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     override fun onDraw(canvas:Canvas) {
 
@@ -54,6 +57,33 @@ class ColorFilterSlider(ctx:Context,bitmap:Bitmap,colors:Array<Int>):View(ctx) {
         }
         fun update(scale:Float) {
             screen?.update(scale)
+        }
+    }
+    class AnimationHandler(var cfmb:ColorFilterSliderBitmap):AnimatorListenerAdapter(),ValueAnimator.AnimatorUpdateListener {
+        var startAnim = ValueAnimator.ofFloat(0.0f,1.0f)
+        var endAnim = ValueAnimator.ofFloat(1.0f,0.0f)
+        var animated = false
+        override fun onAnimationUpdate(animator:ValueAnimator) {
+            cfmb.update(animator.animatedValue as Float)
+        }
+        override fun onAnimationEnd(animator:Animator) {
+            if(animated) {
+                cfmb.handleStopCondition()
+                animated = false
+            }
+        }
+        fun start(dir:Int) {
+            if(!animated) {
+                when (dir) {
+                    1 -> {
+                        startAnim.start()
+                    }
+                    -1 -> {
+                        endAnim.start()
+                    }
+                }
+                animated = true
+            }
         }
     }
 }
