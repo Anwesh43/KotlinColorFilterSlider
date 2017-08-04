@@ -8,6 +8,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
+import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 
@@ -33,6 +34,20 @@ class ColorFilterSlider(ctx:Context,var bitmap:Bitmap,var colors:Array<Int>):Vie
         }
         fun handleStopCondition() {
             prevX = x
+        }
+    }
+    class GestureHandler(var renderer:Renderer):GestureDetector.SimpleOnGestureListener() {
+        override fun onDown(event:MotionEvent):Boolean {
+            return true
+        }
+        override fun onSingleTapUp(event:MotionEvent):Boolean {
+            return true
+        }
+        override fun onFling(e1:MotionEvent,e2:MotionEvent,velx:Float,vely:Float):Boolean {
+            if(Math.abs(velx)>Math.abs(vely)) {
+                renderer.handleSwipe(((e2.x-e1.x)/Math.abs(e2.x-e1.x)).toInt())
+            }
+            return true
         }
     }
     class Renderer {
