@@ -3,11 +3,9 @@ package com.anwesome.ui.colorfiltersliderkotlin
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
+import android.app.Activity
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.RectF
+import android.graphics.*
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
@@ -15,18 +13,15 @@ import android.view.View
 /**
  * Created by anweshmishra on 04/08/17.
  */
-class ColorFilterSlider(ctx:Context,var bitmap:Bitmap,var colors:Array<Int>):View(ctx) {
+class ColorFilterSlider(var ctx:Context,var bitmap:Bitmap,var colors:Array<Int>):View(ctx) {
     val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    val renderer = Renderer(this)
+    val gestureDetector = GestureDetector(ctx,GestureHandler(renderer))
     override fun onDraw(canvas:Canvas) {
-
+        renderer.render(canvas,paint)
     }
     override fun onTouchEvent(event:MotionEvent):Boolean {
-        when(event.action) {
-            MotionEvent.ACTION_DOWN -> {
-
-            }
-        }
-        return true
+        return gestureDetector.onTouchEvent(event)
     }
     data class Screen(var w:Int,var x:Float = 0.0f,var prevX:Float = 0.0f) {
         fun update(scale:Float) {
@@ -50,20 +45,25 @@ class ColorFilterSlider(ctx:Context,var bitmap:Bitmap,var colors:Array<Int>):Vie
             return true
         }
     }
-    class Renderer {
+    class Renderer(var v:ColorFilterSlider) {
         var time = 0
+        var counter = 0
         var cfmb:ColorFilterSliderBitmap?=null
         var animationHandler:AnimationHandler?=null
-        fun render(canvas:Canvas,paint:Paint,v:ColorFilterSlider) {
+        fun render(canvas:Canvas,paint:Paint) {
             if(time == 0) {
-                cfmb = ColorFilterSliderBitmap(v.bitmap,v.colors,canvas.width,canvas.height)
+                var bitmap = Bitmap.createScaledBitmap(v.bitmap,canvas.width,canvas.height,true)
+                cfmb = ColorFilterSliderBitmap(bitmap,v.colors,canvas.width,canvas.height)
                 animationHandler = AnimationHandler(cfmb)
             }
             cfmb?.draw(canvas,paint)
             time++
         }
         fun handleSwipe(dir:Int) {
-            animationHandler?.start(dir)
+            if((dir == -1 && counter < v.colors.size-2) || (dir == 1 && counter > 0)) {
+                animationHandler?.start(dir)
+                counter -= dir
+            }
         }
     }
     data class ColorFilterSliderBitmap(var bitmap:Bitmap,var colors:Array<Int>,var w:Int,var h:Int) {
@@ -80,7 +80,7 @@ class ColorFilterSlider(ctx:Context,var bitmap:Bitmap,var colors:Array<Int>):Vie
             canvas.translate(screen?.x?:0.0f,0.0f)
             var x = 0.0f
             colors.forEach { color ->
-                paint.color = color
+                paint.color = Color.argb(150,Color.red(color),Color.green(color),Color.blue(color))
                 canvas.drawRect(RectF(x,0.0f,x+w.toFloat(),h.toFloat()),paint)
                 x += w
             }
@@ -115,6 +115,12 @@ class ColorFilterSlider(ctx:Context,var bitmap:Bitmap,var colors:Array<Int>):Vie
                 }
                 animated = true
             }
+        }
+    }
+    companion object {
+        fun create(activity:Activity,bitmap: Bitmap,colors:Array<Int>) {
+            var colorFilterSlider = ColorFilterSlider(activity,bitmap,colors)
+            activity.setContentView(colorFilterSlider)
         }
     }
 }
