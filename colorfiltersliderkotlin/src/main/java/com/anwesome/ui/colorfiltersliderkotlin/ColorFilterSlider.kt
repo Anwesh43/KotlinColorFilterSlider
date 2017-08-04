@@ -5,10 +5,13 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.app.Activity
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.graphics.*
+import android.support.v7.app.AppCompatActivity
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
+import android.view.WindowManager
 
 /**
  * Created by anweshmishra on 04/08/17.
@@ -131,6 +134,17 @@ class ColorFilterSlider(var ctx:Context,var bitmap:Bitmap,var colors:Array<Int>)
     }
     companion object {
         fun create(activity:Activity,bitmap: Bitmap,colors:Array<Int>) {
+            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            if(activity is AppCompatActivity) {
+                var appCompatActivity = activity as AppCompatActivity
+                var actionBar = appCompatActivity.supportActionBar
+                actionBar?.hide()
+            }
+            else {
+                var actionBar = activity.actionBar
+                actionBar.hide()
+            }
+            activity.window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
             var colorFilterSlider = ColorFilterSlider(activity,bitmap,colors)
             activity.setContentView(colorFilterSlider)
         }
