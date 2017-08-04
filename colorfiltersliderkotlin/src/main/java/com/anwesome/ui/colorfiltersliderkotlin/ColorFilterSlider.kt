@@ -35,6 +35,22 @@ class ColorFilterSlider(ctx:Context,var bitmap:Bitmap,var colors:Array<Int>):Vie
             prevX = x
         }
     }
+    class Renderer {
+        var time = 0
+        var cfmb:ColorFilterSliderBitmap?=null
+        var animationHandler:AnimationHandler?=null
+        fun render(canvas:Canvas,paint:Paint,v:ColorFilterSlider) {
+            if(time == 0) {
+                cfmb = ColorFilterSliderBitmap(v.bitmap,v.colors,canvas.width,canvas.height)
+                animationHandler = AnimationHandler(cfmb)
+            }
+            cfmb?.draw(canvas,paint)
+            time++
+        }
+        fun handleSwipe(dir:Int) {
+            animationHandler?.start(dir)
+        }
+    }
     data class ColorFilterSliderBitmap(var bitmap:Bitmap,var colors:Array<Int>,var w:Int,var h:Int) {
         var screen:Screen?=null
         init {
@@ -59,16 +75,16 @@ class ColorFilterSlider(ctx:Context,var bitmap:Bitmap,var colors:Array<Int>):Vie
             screen?.update(scale)
         }
     }
-    class AnimationHandler(var cfmb:ColorFilterSliderBitmap):AnimatorListenerAdapter(),ValueAnimator.AnimatorUpdateListener {
+    class AnimationHandler(var cfmb:ColorFilterSliderBitmap?):AnimatorListenerAdapter(),ValueAnimator.AnimatorUpdateListener {
         var startAnim = ValueAnimator.ofFloat(0.0f,1.0f)
         var endAnim = ValueAnimator.ofFloat(1.0f,0.0f)
         var animated = false
         override fun onAnimationUpdate(animator:ValueAnimator) {
-            cfmb.update(animator.animatedValue as Float)
+            cfmb?.update(animator.animatedValue as Float)
         }
         override fun onAnimationEnd(animator:Animator) {
             if(animated) {
-                cfmb.handleStopCondition()
+                cfmb?.handleStopCondition()
                 animated = false
             }
         }
